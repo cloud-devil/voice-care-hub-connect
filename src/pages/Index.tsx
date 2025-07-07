@@ -1,128 +1,125 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Hospital, 
-  Users, 
-  Calendar, 
-  FileText, 
-  Shield, 
-  Clock, 
-  Heart,
-  Stethoscope,
-  UserCheck,
-  Activity
-} from 'lucide-react';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Hospital, Heart, Users, Calendar, Shield, Clock } from "lucide-react";
 
 const Index = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/dashboard");
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
+
   const features = [
     {
       icon: Users,
-      title: 'Patient Management',
-      description: 'Comprehensive patient records and history tracking'
+      title: "Patient Management",
+      description: "Comprehensive patient records and history tracking"
     },
     {
       icon: Calendar,
-      title: 'Appointment Scheduling',
-      description: 'Easy scheduling and appointment management system'
+      title: "Appointment Scheduling",
+      description: "Easy scheduling and management of appointments"
     },
     {
-      icon: FileText,
-      title: 'Medical Records',
-      description: 'Secure digital storage of all medical documents'
+      icon: Heart,
+      title: "Health Monitoring",
+      description: "Real-time health metrics and vital signs tracking"
     },
     {
       icon: Shield,
-      title: 'HIPAA Compliant',
-      description: 'Full compliance with healthcare privacy regulations'
+      title: "Secure & Compliant",
+      description: "HIPAA compliant with enterprise-grade security"
     },
     {
-      icon: Activity,
-      title: 'Real-time Monitoring',
-      description: 'Live patient monitoring and emergency alerts'
+      icon: Clock,
+      title: "24/7 Access",
+      description: "Round-the-clock access to medical information"
     },
     {
-      icon: Stethoscope,
-      title: 'Clinical Tools',
-      description: 'Advanced medical tools and diagnostic support'
+      icon: Hospital,
+      title: "Multi-facility",
+      description: "Manage multiple healthcare facilities from one platform"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div className="flex items-center gap-2">
-              <Hospital className="h-8 w-8 text-blue-600" />
-              <span className="text-2xl font-bold text-gray-900">MedCare Portal</span>
+            <div className="flex items-center gap-3">
+              <Hospital className="h-10 w-10 text-blue-600" />
+              <h1 className="text-2xl font-bold text-gray-900">MedCare Portal</h1>
             </div>
-            <div className="flex items-center gap-4">
-              <Link to="/signin">
-                <Button variant="outline">Sign In</Button>
-              </Link>
-              <Link to="/signup">
-                <Button className="bg-blue-600 hover:bg-blue-700">Get Started</Button>
-              </Link>
+            <div className="flex gap-4">
+              <Button variant="outline" onClick={() => navigate("/signin")}>
+                Sign In
+              </Button>
+              <Button onClick={() => navigate("/signup")} className="bg-blue-600 hover:bg-blue-700">
+                Get Started
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex justify-center mb-8">
-            <div className="p-4 bg-blue-100 rounded-full">
-              <Hospital className="h-16 w-16 text-blue-600" />
-            </div>
-          </div>
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Modern Hospital Management
-            <span className="text-blue-600 block">Made Simple</span>
-          </h1>
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-5xl font-bold text-gray-900 mb-6">
+            Modern Healthcare
+            <span className="text-blue-600"> Management</span>
+          </h2>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Streamline your healthcare operations with our comprehensive hospital management system. 
-            From patient records to appointment scheduling, everything you need in one place.
+            Manage patients, appointments, and staff efficiently with cutting-edge technology.
           </p>
           <div className="flex justify-center gap-4">
-            <Link to="/signup">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 px-8 py-3">
-                Start Free Trial
-              </Button>
-            </Link>
-            <Link to="/dashboard">
-              <Button size="lg" variant="outline" className="px-8 py-3">
-                View Demo
-              </Button>
-            </Link>
+            <Button size="lg" onClick={() => navigate("/signup")} className="bg-blue-600 hover:bg-blue-700">
+              Start Free Trial
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate("/signin")}>
+              Sign In
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Everything You Need to Manage Your Hospital
-            </h2>
-            <p className="text-xl text-gray-600">
-              Comprehensive tools designed specifically for healthcare professionals
+            <h3 className="text-3xl font-bold text-gray-900 mb-4">
+              Everything You Need to Manage Healthcare
+            </h3>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Our platform provides all the tools you need to deliver exceptional patient care 
+              while maintaining operational efficiency.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <Card key={index} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <div className="p-3 bg-blue-100 rounded-full w-fit">
-                    <feature.icon className="h-6 w-6 text-blue-600" />
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <feature.icon className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <CardTitle className="text-lg">{feature.title}</CardTitle>
                   </div>
-                  <CardTitle>{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <CardDescription className="text-gray-600">
@@ -135,60 +132,38 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-blue-600">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-            <div className="text-white">
-              <div className="text-4xl font-bold mb-2">10K+</div>
-              <div className="text-blue-200">Patients Managed</div>
-            </div>
-            <div className="text-white">
-              <div className="text-4xl font-bold mb-2">500+</div>
-              <div className="text-blue-200">Healthcare Providers</div>
-            </div>
-            <div className="text-white">
-              <div className="text-4xl font-bold mb-2">99.9%</div>
-              <div className="text-blue-200">Uptime Guarantee</div>
-            </div>
-            <div className="text-white">
-              <div className="text-4xl font-bold mb-2">24/7</div>
-              <div className="text-blue-200">Support Available</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl p-12 text-white">
-            <Heart className="h-16 w-16 mx-auto mb-6" />
-            <h2 className="text-3xl font-bold mb-4">
-              Ready to Transform Your Hospital Operations?
-            </h2>
-            <p className="text-xl mb-8 opacity-90">
-              Join thousands of healthcare professionals who trust MedCare Portal
-            </p>
-            <Link to="/signup">
-              <Button size="lg" variant="secondary" className="px-8 py-3">
-                Get Started Today
-              </Button>
-            </Link>
-          </div>
+      <section className="py-20 bg-blue-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h3 className="text-3xl font-bold text-white mb-4">
+            Ready to Transform Your Healthcare Management?
+          </h3>
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Join thousands of healthcare professionals who trust MedCare Portal 
+            for their daily operations.
+          </p>
+          <Button 
+            size="lg" 
+            variant="secondary" 
+            onClick={() => navigate("/signup")}
+            className="bg-white text-blue-600 hover:bg-gray-100"
+          >
+            Get Started Today
+          </Button>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <Hospital className="h-8 w-8 text-blue-400" />
-            <span className="text-2xl font-bold">MedCare Portal</span>
-          </div>
-          <div className="text-center text-gray-400">
-            <p>&copy; 2024 MedCare Portal. All rights reserved.</p>
-            <p className="mt-2">Empowering healthcare through technology</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Hospital className="h-8 w-8 text-blue-400" />
+              <span className="text-xl font-bold">MedCare Portal</span>
+            </div>
+            <p className="text-gray-400">
+              © 2024 MedCare Portal. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>

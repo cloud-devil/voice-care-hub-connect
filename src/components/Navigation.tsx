@@ -3,8 +3,15 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Hospital, User, LogOut, Settings, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navigation = () => {
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <nav className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -25,9 +32,9 @@ const Navigation = () => {
             </Button>
             <Button variant="ghost" size="sm">
               <User className="h-4 w-4" />
-              <span className="ml-2">Dr. Smith</span>
+              <span className="ml-2">{user?.email}</span>
             </Button>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
               <span className="ml-2">Logout</span>
             </Button>

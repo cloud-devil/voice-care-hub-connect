@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,27 +13,94 @@ import {
   User,
   Activity,
   Clock,
-  Phone
+  Phone,
+  UserCheck,
+  UserX
 } from 'lucide-react';
 import VoiceAssistant from '@/components/VoiceAssistant';
 import Navigation from '@/components/Navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 const Dashboard = () => {
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/signin');
+    }
+  }, [user, loading, navigate]);
+
+  // Fetch doctors data
+  const { data: doctorsData, isLoading: doctorsLoading } = useQuery({
+    queryKey: ['doctors'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('doctors')
+        .select(`
+          *,
+          profiles:user_id (
+            name,
+            email
+          )
+        `);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Fetch appointments data
+  const { data: appointmentsData, isLoading: appointmentsLoading } = useQuery({
+    queryKey: ['appointments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select(`
+          *,
+          profiles:patient_id (
+            name,
+            email
+          ),
+          doctors:doctor_id (
+            profiles:user_id (
+              name
+            )
+          )
+        `)
+        .eq('appointment_date', new Date().toISOString().split('T')[0]);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  if (loading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  const totalDoctors = doctorsData?.length || 0;
+  const presentDoctors = doctorsData?.filter(doctor => doctor.is_present).length || 0;
+  const availableDoctors = doctorsData?.filter(doctor => doctor.availability_status === 'available').length || 0;
+  const todaysAppointments = appointmentsData?.length || 0;
 
   const stats = [
-    { title: 'Total Patients', value: '1,247', icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
-    { title: 'Today\'s Appointments', value: '28', icon: Calendar, color: 'text-green-600', bg: 'bg-green-100' },
-    { title: 'Active Staff', value: '156', icon: User, color: 'text-purple-600', bg: 'bg-purple-100' },
-    { title: 'Emergency Cases', value: '3', icon: Activity, color: 'text-red-600', bg: 'bg-red-100' }
+    { title: 'Total Doctors', value: totalDoctors.toString(), icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
+    { title: 'Doctors Present', value: presentDoctors.toString(), icon: UserCheck, color: 'text-green-600', bg: 'bg-green-100' },
+    { title: 'Available Doctors', value: availableDoctors.toString(), icon: Activity, color: 'text-purple-600', bg: 'bg-purple-100' },
+    { title: 'Today\'s Appointments', value: todaysAppointments.toString(), icon: Calendar, color: 'text-orange-600', bg: 'bg-orange-100' }
   ];
 
-  const recentAppointments = [
-    { id: 1, patient: 'John Doe', doctor: 'Dr. Smith', time: '10:00 AM', status: 'Confirmed' },
-    { id: 2, patient: 'Jane Wilson', doctor: 'Dr. Johnson', time: '11:30 AM', status: 'Pending' },
-    { id: 3, patient: 'Mike Brown', doctor: 'Dr. Davis', time: '2:00 PM', status: 'Confirmed' },
-    { id: 4, patient: 'Sarah Lee', doctor: 'Dr. Miller', time: '3:30 PM', status: 'Cancelled' }
-  ];
+  const recentAppointments = appointmentsData?.slice(0, 4) || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -65,45 +132,53 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Appointments */}
+          {/* Doctor Availability */}
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Recent Appointments
+                <Users className="h-5 w-5" />
+                Doctor Availability
               </CardTitle>
-              <CardDescription>Latest scheduled appointments</CardDescription>
+              <CardDescription>Current status of all doctors</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentAppointments.map((appointment) => (
-                  <div key={appointment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 bg-blue-100 rounded-full">
-                        <User className="h-4 w-4 text-blue-600" />
+              {doctorsLoading ? (
+                <div className="text-center py-4">Loading doctors...</div>
+              ) : (
+                <div className="space-y-4">
+                  {doctorsData?.map((doctor) => (
+                    <div key={doctor.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="p-2 bg-blue-100 rounded-full">
+                          <User className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{doctor.profiles?.name || 'Doctor'}</p>
+                          <p className="text-sm text-gray-600">{doctor.specialization} - {doctor.department}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{appointment.patient}</p>
-                        <p className="text-sm text-gray-600">{appointment.doctor}</p>
+                      <div className="flex items-center gap-3">
+                        <Badge 
+                          variant={doctor.is_present ? 'default' : 'secondary'}
+                          className={doctor.is_present ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
+                        >
+                          {doctor.is_present ? 'Present' : 'Absent'}
+                        </Badge>
+                        <Badge 
+                          variant={doctor.availability_status === 'available' ? 'default' : 'destructive'}
+                        >
+                          {doctor.availability_status}
+                        </Badge>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1 text-gray-600">
-                        <Clock className="h-4 w-4" />
-                        <span className="text-sm">{appointment.time}</span>
-                      </div>
-                      <Badge 
-                        variant={
-                          appointment.status === 'Confirmed' ? 'default' :
-                          appointment.status === 'Pending' ? 'secondary' : 'destructive'
-                        }
-                      >
-                        {appointment.status}
-                      </Badge>
+                  ))}
+                  {doctorsData?.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      No doctors found. Add some doctors to see their availability.
                     </div>
-                  </div>
-                ))}
-              </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -130,6 +205,60 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Today's Appointments */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Today's Appointments
+            </CardTitle>
+            <CardDescription>Scheduled appointments for today</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {appointmentsLoading ? (
+              <div className="text-center py-4">Loading appointments...</div>
+            ) : (
+              <div className="space-y-4">
+                {recentAppointments.map((appointment) => (
+                  <div key={appointment.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="p-2 bg-blue-100 rounded-full">
+                        <User className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{appointment.profiles?.name || 'Patient'}</p>
+                        <p className="text-sm text-gray-600">
+                          Dr. {appointment.doctors?.profiles?.name || 'Doctor'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <Clock className="h-4 w-4" />
+                        <span className="text-sm">{appointment.appointment_time}</span>
+                      </div>
+                      <Badge 
+                        variant={
+                          appointment.status === 'scheduled' ? 'default' :
+                          appointment.status === 'confirmed' ? 'default' :
+                          appointment.status === 'cancelled' ? 'destructive' : 'secondary'
+                        }
+                      >
+                        {appointment.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+                {recentAppointments.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No appointments scheduled for today.
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Quick Actions */}
         <Card className="mt-6">
