@@ -115,6 +115,142 @@ export type Database = {
           },
         ]
       }
+      duty_schedules: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          duty_date: string
+          id: string
+          notes: string | null
+          shift_end: string
+          shift_start: string
+          ward: string | null
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          duty_date: string
+          id?: string
+          notes?: string | null
+          shift_end: string
+          shift_start: string
+          ward?: string | null
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          duty_date?: string
+          id?: string
+          notes?: string | null
+          shift_end?: string
+          shift_start?: string
+          ward?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "duty_schedules_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nurses: {
+        Row: {
+          created_at: string
+          department: string
+          id: string
+          is_present: boolean
+          shift_end: string | null
+          shift_start: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          department: string
+          id?: string
+          is_present?: boolean
+          shift_end?: string | null
+          shift_start?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          department?: string
+          id?: string
+          is_present?: boolean
+          shift_end?: string | null
+          shift_start?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nurses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operations: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          id: string
+          notes: string | null
+          operation_date: string
+          operation_name: string
+          operation_time: string
+          patient_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          id?: string
+          notes?: string | null
+          operation_date: string
+          operation_name: string
+          operation_time: string
+          patient_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          notes?: string | null
+          operation_date?: string
+          operation_name?: string
+          operation_time?: string
+          patient_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operations_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operations_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
