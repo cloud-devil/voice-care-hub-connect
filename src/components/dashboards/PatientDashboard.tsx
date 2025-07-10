@@ -99,7 +99,7 @@ const PatientDashboard = () => {
       toast.success('Appointment booked successfully!');
       queryClient.invalidateQueries({ queryKey: ['patient-appointments'] });
       setIsBookingOpen(false);
-      setSelectedDoctor('pavani,krishna, murali');
+      setSelectedDoctor('');
       setAppointmentDate('');
       setAppointmentTime('');
       setNotes('');
